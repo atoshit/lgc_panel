@@ -11,6 +11,12 @@ local METADATA <const> = {
     service = SERVICE,
 }
 
+---@param resource string
+---@return boolean
+local function IsResourceStarted(resource)
+    return GetResourceState(resource) == "started"
+end
+
 local function Initialize()
     local lgc = setmetatable({}, {
         __index = METADATA,
@@ -26,17 +32,28 @@ local function Initialize()
 
     if SERVICE == "server" then
         if not IsResourceStarted("oxmysql") then
-            return error("^1[Logic Panel] ^7oxmysql is not started. Initalizing failed.")
+            error("^1[Logic Panel] oxmysql is not started. Initalizing failed.")
+            return false
         end
 
         lgc.mysql = {}
 
         print("^2[Logic Panel] ^7Resource initalized on server.")
+        print("^2[Logic Panel] ^7Version: ^7" .. lgc.version)
+        print("^2[Logic Panel] ^7Author: ^7" .. lgc.author)
+        print("^2[Logic Panel] ^7Description: ^7" .. lgc.description)
+        print("^2[Logic Panel] ^7Repository: ^7" .. lgc.repository)
+        return true
     else
         print("^2[Logic Panel] ^7Resource initalized on client.")
+        print("^2[Logic Panel] ^7Version: ^7" .. lgc.version)
+        print("^2[Logic Panel] ^7Author: ^7" .. lgc.author)
+        print("^2[Logic Panel] ^7Description: ^7" .. lgc.description)
+        print("^2[Logic Panel] ^7Repository: ^7" .. lgc.repository)
+        return true
     end
 end
 
 if not Initialize() then
-    return error("^1[Logic Panel] ^7Resource failed to initalize.")
+    return error("^1[Logic Panel] Resource failed to initalize.")
 end

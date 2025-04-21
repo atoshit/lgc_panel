@@ -3,10 +3,10 @@ game 'gta5'
 lua54 'yes'
 use_experimental_fxv2_oal 'yes'
 
-author 'Logic. Studo (Atoshi)'
+author 'Logic. Studios (Atoshi)'
 description 'Logic Panel is an in-game server management panel for FiveM. It allows admins to create and manage gangs, jobs, zones, and other server elements directly from the game.'
-version '0.0.1'
-repository 'https://github.com/atoshit/lgc_panel'
+version 'v0.0.1'
+repository 'atoshit/lgc_panel'
 
 dependencies {
     'oxmysql'
@@ -19,7 +19,7 @@ shared_scripts {
 }
 
 server_scripts {
-    -- TODO: Add server files here
+    'server/version.lua',
 }
 
 client_scripts {
