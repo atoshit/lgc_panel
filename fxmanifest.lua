@@ -26,8 +26,19 @@ shared_scripts {
 
 server_scripts {
     'server/version.lua',
+    'server/*.lua'
 }
 
 client_scripts {
-    -- TODO: Add client files here
+    'client/*.lua'
+}
+
+ui_page 'web/build/index.html'
+
+files {
+    'web/build/index.html',
+    'web/build/static/css/*',
+    'web/build/static/js/*',
+    'web/build/static/media/*',
+    'web/build/asset-manifest.json'
 }
