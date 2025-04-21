@@ -13,7 +13,9 @@ dependencies {
 }
 
 shared_scripts {
-    -- TODO: Add shared files here
+    'shared/init.lua',
+    'shared/configs/*.lua',
+    'shared/functions/*.lua',
 }
 
 server_scripts {
