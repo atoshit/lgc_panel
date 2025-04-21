@@ -1,3 +1,9 @@
+--[[
+    https://github.com/atoshit/lgc_panel
+
+    Copyright © 2025 Logic. Studios <https://github.com/atoshit>
+]]
+
 local debugLevel <const> = CONF.log.debug
 local errorLevel <const> = CONF.log.error
 local prefix <const> = ("^7[%s:%s] ^7%s")

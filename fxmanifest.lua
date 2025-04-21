@@ -1,3 +1,9 @@
+--[[
+    https://github.com/atoshit/lgc_panel
+
+    Copyright © 2025 Logic. Studios <https://github.com/atoshit>
+]]
+
 fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
