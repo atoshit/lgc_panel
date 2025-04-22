@@ -35,4 +35,17 @@ end)
 RegisterNetEvent('lgc_panel:deleteRoleCallback')
 AddEventHandler('lgc_panel:deleteRoleCallback', function(success, error)
     handleCallback('deleteRole', success, error)
+end)
+
+RegisterNetEvent('lgc_panel:playersCallback')
+AddEventHandler('lgc_panel:playersCallback', function(players)
+    SendNUIMessage({
+        action = 'setPlayers',
+        players = players
+    })
+end)
+
+RegisterNUICallback('getPlayers', function(data, cb)
+    TriggerServerEvent('lgc_panel:getPlayers')
+    cb({})
 end) 

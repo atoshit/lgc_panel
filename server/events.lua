@@ -134,3 +134,20 @@ AddEventHandler('lgc_panel:checkAccess', function()
     TriggerClientEvent('lgc_panel:accessCallback', source, hasAccess)
 end)
 
+RegisterNetEvent('lgc_panel:getPlayers', function()
+    local source = source
+    if not lgc.permissionManager:hasPermission(GetPlayerIdentifierByType(source, 'license'), 'panel.players.view') then
+        return TriggerClientEvent('lgc_panel:playersCallback', source, {})
+    end
+
+    local players, maxClients = lgc.getPlayers()
+    if not players then players = {} end
+    
+    TriggerClientEvent('lgc_panel:playersCallback', source, players)
+    TriggerClientEvent('lgc_panel:setPlayers', source, {
+        action = 'setPlayers',
+        players = players,
+        maxClients = maxClients
+    })
+end)
+

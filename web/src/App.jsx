@@ -5,7 +5,9 @@ import Players from './pages/Players';
 import Reports from './pages/Reports';
 import Roles from './pages/Roles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faUser, faFlag, faBan } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faUser, faFlag, faBan, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const [visible, setVisible] = useState(false);
@@ -19,6 +21,10 @@ function App() {
     bans: 0
   });
   const [permissions, setPermissions] = useState({});
+  const [players, setPlayers] = useState([]);
+  const [serverInfo, setServerInfo] = useState({
+    maxClients: 0
+  });
 
   const closePanel = () => {
     setVisible(false);
@@ -44,6 +50,12 @@ function App() {
           setPlayerInfo(data.data.playerInfo);
           setPermissions(data.data.playerInfo.permissions || {});
         }
+      }
+      if (data.action === 'setPlayers') {
+        setPlayers(data.players || []);
+        setServerInfo({
+          maxClients: data.maxClients || 0
+        });
       }
     });
   }, []);
@@ -93,123 +105,138 @@ function App() {
   if (!visible) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      zIndex: 9999
-    }}>
+    <>
       <div style={{
-        position: 'relative',
-        width: '1200px',
-        height: '800px',
-        backgroundColor: '#1a1a1a',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
         display: 'flex',
-        borderRadius: '10px',
-        overflow: 'hidden',
-        boxShadow: '0 0 30px rgba(0, 0, 0, 0.5)'
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        zIndex: 9999
       }}>
-        <Sidebar 
-          onPageChange={setCurrentPage} 
-          currentPage={currentPage}
-          version={version}
-          permissions={permissions}
-        />
         <div style={{
-          flex: 1,
+          position: 'relative',
+          width: '1200px',
+          height: '800px',
+          backgroundColor: '#1a1a1a',
           display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: '#222222',
-          position: 'relative'
+          borderRadius: '10px',
+          overflow: 'hidden',
+          boxShadow: '0 0 30px rgba(0, 0, 0, 0.5)'
         }}>
+          <Sidebar 
+            onPageChange={setCurrentPage} 
+            currentPage={currentPage}
+            version={version}
+            permissions={permissions}
+            style={{ width: '250px', flexShrink: 0 }}
+          />
           <div style={{
-            backgroundColor: '#1a1a1a',
-            padding: '15px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid #333333'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '20px'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <FontAwesomeIcon icon={faUser} style={{ color: '#9ca3af' }} />
-                <span style={{ color: '#e5e7eb' }}>{playerInfo.name}</span>
-                <span style={{ color: '#9ca3af' }}>(ID: {playerInfo.id})</span>
-              </div>
-              <div style={{
-                backgroundColor: '#2a2a2a',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                color: '#e5e7eb'
-              }}>
-                {playerInfo.role}
-              </div>
-            </div>
-
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '15px'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: '#9ca3af'
-              }}>
-                <FontAwesomeIcon icon={faFlag} />
-                <span>{playerInfo.reports} reports</span>
-              </div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: '#9ca3af'
-              }}>
-                <FontAwesomeIcon icon={faBan} />
-                <span>{playerInfo.bans} bans</span>
-              </div>
-              <button 
-                onClick={closePanel}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#9ca3af',
-                  cursor: 'pointer',
-                  padding: '5px',
-                  transition: 'color 0.2s',
-                  marginLeft: '10px'
-                }}
-              >
-                <FontAwesomeIcon icon={faTimes} style={{ width: '20px', height: '20px' }} />
-              </button>
-            </div>
-          </div>
-
-          <main style={{
             flex: 1,
-            overflow: 'auto',
-            padding: '20px'
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: '#222222',
+            position: 'relative',
+            width: 'calc(100% - 250px)',
+            overflow: 'hidden'
           }}>
-            {renderPage()}
-          </main>
+            <div style={{
+              backgroundColor: '#1a1a1a',
+              padding: '15px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: '1px solid #333333'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <FontAwesomeIcon icon={faUser} style={{ color: '#9ca3af' }} />
+                  <span style={{ color: '#e5e7eb' }}>{playerInfo.name}</span>
+                  <span style={{ color: '#9ca3af' }}>(ID: {playerInfo.id})</span>
+                </div>
+                <div style={{
+                  backgroundColor: '#2a2a2a',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  color: '#e5e7eb'
+                }}>
+                  {playerInfo.role}
+                </div>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: '#9ca3af'
+                }}>
+                  <FontAwesomeIcon icon={faUsers} />
+                  <span>{players.length}/{serverInfo.maxClients} joueurs</span>
+                </div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: '#9ca3af'
+                }}>
+                  <FontAwesomeIcon icon={faFlag} />
+                  <span>{playerInfo.reports} reports</span>
+                </div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: '#9ca3af'
+                }}>
+                  <FontAwesomeIcon icon={faBan} />
+                  <span>{playerInfo.bans} bans</span>
+                </div>
+                <button 
+                  onClick={closePanel}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#9ca3af',
+                    cursor: 'pointer',
+                    padding: '5px',
+                    transition: 'color 0.2s',
+                    marginLeft: '10px'
+                  }}
+                >
+                  <FontAwesomeIcon icon={faTimes} style={{ width: '20px', height: '20px' }} />
+                </button>
+              </div>
+            </div>
+
+            <main style={{
+              flex: 1,
+              overflow: 'auto',
+              padding: '20px'
+            }}>
+              {renderPage()}
+            </main>
+          </div>
         </div>
       </div>
-    </div>
+      <ToastContainer />
+    </>
   );
 }
 

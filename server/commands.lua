@@ -4,17 +4,6 @@
     Copyright © 2025 Logic. Studios <https://github.com/atoshit>
 ]]
 
-local function GetPlayerIdentifierFromSource(source)
-    if not source or source == 0 then return nil end
-    local identifiers = GetPlayerIdentifiers(source)
-    for _, identifier in ipairs(identifiers) do
-        if string.match(identifier, "license:") then
-            return identifier
-        end
-    end
-    return nil
-end
-
 local function syncPlayerPermissions(playerId)
     if not playerId then return end
     

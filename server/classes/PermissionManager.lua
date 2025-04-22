@@ -206,7 +206,7 @@ function PermissionManager:loadData()
         end
     end
 
-    print('^2[SUCCESS] Données chargées : ' .. #roles .. ' rôles et ' .. #userRoles .. ' assignations^0')
+    log('Données chargées : ' .. #roles .. ' rôles et ' .. #userRoles .. ' assignations', "info")
 end
 
 function PermissionManager:saveIfNeeded()
