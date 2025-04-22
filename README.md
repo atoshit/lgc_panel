@@ -19,8 +19,13 @@ Un panel d'administration moderne et intuitif pour FiveM.
 ## 💾 Installation
 
 1. Installer la ressource dans votre dossier `resources`
-2. Ajouter `ensure lgc_panel` dans votre `server.cfg`
-3. La base de données sera automatiquement configurée au démarrage
+2. Builder le projet avec les commandes suivantes :
+    ```bash
+    npm install
+    npm run build
+    ```
+3. Ajouter `ensure lgc_panel` dans votre `server.cfg`
+4. La base de données sera automatiquement configurée au démarrage
 
 ## 🔧 Configuration
 
@@ -40,7 +45,7 @@ Un panel d'administration moderne et intuitif pour FiveM.
 
 - `roles` : Liste tous les rôles disponibles
 
-### Structure des Classes
+### Classes
 
 #### PermissionManager
 
