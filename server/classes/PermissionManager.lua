@@ -31,7 +31,6 @@ function PermissionManager:createRole(name, label, permissions, creatorName, cre
         return false
     end
 
-    -- Créer d'abord en base de données
     local success = MySQL.insert.await('INSERT INTO lgc_roles (name, label, permissions, created_by_name, created_by_license) VALUES (?, ?, ?, ?, ?)', {
         name,
         label,
@@ -41,7 +40,6 @@ function PermissionManager:createRole(name, label, permissions, creatorName, cre
     })
 
     if success then
-        -- Si la création en base réussit, mettre à jour le cache
         self.roles:set(name, {
             name = name,
             label = label,
@@ -109,7 +107,6 @@ function PermissionManager:assignRole(identifier, roleName)
         return false
     end
 
-    -- Vérifier que le rôle existe en base de données
     local roleExists = MySQL.scalar.await('SELECT 1 FROM lgc_roles WHERE name = ?', {roleName})
     if not roleExists then
         print('^1[ERROR] Le rôle ' .. roleName .. ' n\'existe pas en base de données^0')
