@@ -96,14 +96,12 @@ AddEventHandler('lgc_panel:deleteRole', function(data)
     TriggerClientEvent('lgc_panel:deleteRoleCallback', source, success, not success and 'Rôle introuvable' or nil)
 end)
 
--- Fonction exportée pour synchroniser les permissions
 function lgc.syncPlayerPermissions(playerId)
     if not playerId then return end
     
     local identifier = GetPlayerIdentifierByType(playerId, 'license')
     if not identifier then return end
 
-    -- Récupérer le rôle du joueur
     local roleName = lgc.permissionManager.userRoles:get(identifier)
     local role = roleName and lgc.permissionManager.roles:get(roleName)
     
@@ -130,7 +128,6 @@ AddEventHandler('lgc_panel:checkAccess', function()
     local source = source
     local identifier = GetPlayerIdentifierByType(source, 'license')
     
-    -- Vérifier si le joueur a un rôle
     local roleName = lgc.permissionManager.userRoles:get(identifier)
     local hasAccess = roleName ~= nil
     

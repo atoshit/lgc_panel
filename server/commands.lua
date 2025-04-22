@@ -4,7 +4,6 @@
     Copyright © 2025 Logic. Studios <https://github.com/atoshit>
 ]]
 
--- Fonction utilitaire pour obtenir l'identifiant d'un joueur
 local function GetPlayerIdentifierFromSource(source)
     if not source or source == 0 then return nil end
     local identifiers = GetPlayerIdentifiers(source)
@@ -16,14 +15,12 @@ local function GetPlayerIdentifierFromSource(source)
     return nil
 end
 
--- Fonction utilitaire pour synchroniser les permissions d'un joueur
 local function syncPlayerPermissions(playerId)
     if not playerId then return end
     
     local identifier = GetPlayerIdentifierByType(playerId, 'license')
     if not identifier then return end
 
-    -- Récupérer le rôle du joueur
     local roleName = lgc.permissionManager.userRoles:get(identifier)
     local role = roleName and lgc.permissionManager.roles:get(roleName)
     
@@ -39,14 +36,11 @@ local function syncPlayerPermissions(playerId)
     TriggerClientEvent('lgc_panel:playerInfoCallback', playerId, playerInfo)
 end
 
--- Commande pour attribuer un rôle à un joueur
 RegisterCommand('rank', function(source, args)
-    -- Vérifier que la commande est exécutée depuis la console
     if source ~= 0 then
         return print('^1[ERROR] Cette commande ne peut être exécutée que depuis la console^0')
     end
 
-    -- Vérifier les arguments
     if #args < 2 then
         return print('^3[USAGE] rank <id/license> <role>^0')
     end
@@ -55,7 +49,6 @@ RegisterCommand('rank', function(source, args)
     local roleName = args[2]
     local identifier
 
-    -- Vérifier si c'est un ID de joueur connecté
     if tonumber(target) then
         local playerId = tonumber(target)
         identifier = GetPlayerIdentifierByType(playerId, 'license')
@@ -63,23 +56,19 @@ RegisterCommand('rank', function(source, args)
             return print('^1[ERROR] Joueur non trouvé avec l\'ID ' .. target .. '^0')
         end
     else
-        -- Sinon, considérer comme un identifiant license
         identifier = target
     end
 
-    -- Vérifier si le rôle existe
     if not lgc.permissionManager.roles:exists(roleName) then
         return print('^1[ERROR] Le rôle ' .. roleName .. ' n\'existe pas^0')
     end
 
-    -- Attribuer le rôle
     local success = lgc.permissionManager:assignRole(identifier, roleName)
     
     if success then
         if tonumber(target) then
             local playerName = GetPlayerName(tonumber(target))
             print('^2[SUCCESS] Le rôle ' .. roleName .. ' a été attribué à ' .. playerName .. ' (' .. identifier .. ')^0')
-            -- Synchroniser les permissions du joueur
             syncPlayerPermissions(tonumber(target))
         else
             print('^2[SUCCESS] Le rôle ' .. roleName .. ' a été attribué à ' .. identifier .. '^0')
@@ -89,14 +78,11 @@ RegisterCommand('rank', function(source, args)
     end
 end)
 
--- Commande pour retirer un rôle à un joueur
 RegisterCommand('unrank', function(source, args)
-    -- Vérifier que la commande est exécutée depuis la console
     if source ~= 0 then
         return print('^1[ERROR] Cette commande ne peut être exécutée que depuis la console^0')
     end
 
-    -- Vérifier les arguments
     if #args < 1 then
         return print('^3[USAGE] unrank <id/license>^0')
     end
@@ -104,7 +90,6 @@ RegisterCommand('unrank', function(source, args)
     local target = args[1]
     local identifier
 
-    -- Vérifier si c'est un ID de joueur connecté
     if tonumber(target) then
         local playerId = tonumber(target)
         identifier = GetPlayerIdentifierByType(playerId, 'license')
@@ -112,20 +97,16 @@ RegisterCommand('unrank', function(source, args)
             return print('^1[ERROR] Joueur non trouvé avec l\'ID ' .. target .. '^0')
         end
     else
-        -- Sinon, considérer comme un identifiant license
         identifier = target
     end
 
-    -- Retirer le rôle
     local success = lgc.permissionManager:removeRole(identifier)
 
     if success then
         if tonumber(target) then
             local playerName = GetPlayerName(tonumber(target))
             print('^2[SUCCESS] Le rôle a été retiré de ' .. playerName .. ' (' .. identifier .. ')^0')
-            -- Synchroniser les permissions du joueur
             syncPlayerPermissions(tonumber(target))
-            -- Forcer la fermeture du panel
             TriggerClientEvent('lgc_panel:forceClose', tonumber(target))
         else
             print('^2[SUCCESS] Le rôle a été retiré de ' .. identifier .. '^0')
@@ -135,9 +116,7 @@ RegisterCommand('unrank', function(source, args)
     end
 end)
 
--- Commande pour lister les rôles disponibles
 RegisterCommand('roles', function(source)
-    -- Vérifier que la commande est exécutée depuis la console
     if source ~= 0 then
         return print('^1[ERROR] Cette commande ne peut être exécutée que depuis la console^0')
     end

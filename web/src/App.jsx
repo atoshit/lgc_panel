@@ -64,7 +64,6 @@ function App() {
   };
 
   const renderPage = () => {
-    // Si l'utilisateur n'a aucun rôle, afficher un message sur le dashboard
     if (currentPage === 'dashboard' && (!playerInfo.role || playerInfo.role === "Aucun rôle")) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-neutral-400">

@@ -8,7 +8,6 @@ local panelConfig <const> = CONF.panel
 local isVisible = false
 
 local function togglePanel()
-    -- Vérifier d'abord si le joueur a un rôle
     TriggerServerEvent('lgc_panel:checkAccess')
 end
 
