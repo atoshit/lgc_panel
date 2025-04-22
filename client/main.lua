@@ -10,16 +10,23 @@ local isVisible = false
 local function togglePanel()
     isVisible = not isVisible
     
-    local message = {
+    local playerInfo = {
+        name = GetPlayerName(PlayerId()),
+        id = GetPlayerServerId(PlayerId()),
+        role = "Administrateur",
+        reports = 10,
+        bans = 15 
+    }
+
+    SendNUIMessage({
         action = 'setVisible',
         data = {
             show = isVisible,
             timestamp = GetGameTimer(),
-            version = lgc.version
+            version = lgc.version,
+            playerInfo = playerInfo
         }
-    }
-    
-    SendNUIMessage(message)
+    })
 
     if isVisible then
         SetNuiFocus(true, true)
@@ -44,4 +51,11 @@ RegisterNUICallback('closePanel', function(data, cb)
     SetNuiFocus(false, false)
     SetNuiFocusKeepInput(false)
     cb({})
+end)
+
+RegisterNetEvent('lgc_panel:reloadRoles')
+AddEventHandler('lgc_panel:reloadRoles', function()
+    SendNUIMessage({
+        action = 'reloadRoles'
+    })
 end)

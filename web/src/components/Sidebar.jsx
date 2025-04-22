@@ -9,7 +9,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faHome,
   faUsers,
-  faTriangleExclamation
+  faTriangleExclamation,
+  faUserShield
 } from '@fortawesome/free-solid-svg-icons';
 
 function Sidebar({ onPageChange, currentPage, version }) {
@@ -17,6 +18,7 @@ function Sidebar({ onPageChange, currentPage, version }) {
     { id: 'dashboard', name: 'Dashboard', icon: faHome },
     { id: 'players', name: 'Joueurs', icon: faUsers },
     { id: 'reports', name: 'Reports', icon: faTriangleExclamation },
+    { id: 'roles', name: 'Rôles', icon: faUserShield },
   ];
 
   return (

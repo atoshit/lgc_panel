@@ -19,14 +19,19 @@ dependencies {
 }
 
 shared_scripts {
-    'shared/init.lua',
+    'shared/core.lua',
     'shared/configs/*.lua',
     'shared/functions/*.lua',
 }
 
 server_scripts {
+    '@oxmysql/lib/MySQL.lua',
+    'server/classes/Cache.lua',
+    'server/classes/PermissionManager.lua',
+    'server/init.lua',
     'server/version.lua',
-    'server/*.lua'
+    'server/events.lua',
+    'server/commands.lua'
 }
 
 client_scripts {

@@ -3,13 +3,21 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Players from './pages/Players';
 import Reports from './pages/Reports';
+import Roles from './pages/Roles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faUser, faFlag, faBan } from '@fortawesome/free-solid-svg-icons';
 
 function App() {
   const [visible, setVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [version, setVersion] = useState('');
+  const [playerInfo, setPlayerInfo] = useState({
+    name: '',
+    id: '',
+    role: '',
+    reports: 0,
+    bans: 0
+  });
 
   const closePanel = () => {
     setVisible(false);
@@ -23,25 +31,20 @@ function App() {
   };
 
   useEffect(() => {
-    console.log('App mounted');
-    
     window.addEventListener('message', function(event) {
       const data = event.data;
-      console.log('Message reçu:', data);
       
       if (data.action === 'setVisible') {
-        console.log('Setting visible to:', data.data.show);
         setVisible(data.data.show);
         if (data.data.version) {
           setVersion(data.data.version);
         }
+        if (data.data.playerInfo) {
+          setPlayerInfo(data.data.playerInfo);
+        }
       }
     });
   }, []);
-
-  useEffect(() => {
-    console.log('Visible state changed:', visible);
-  }, [visible]);
 
   useEffect(() => {
     const handleKeyPress = (event) => {
@@ -62,6 +65,8 @@ function App() {
         return <Players />;
       case 'reports':
         return <Reports />;
+      case 'roles':
+        return <Roles />;
       default:
         return <Dashboard />;
     }
@@ -97,32 +102,93 @@ function App() {
           currentPage={currentPage}
           version={version}
         />
-        <main style={{
+        <div style={{
           flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
           backgroundColor: '#222222',
-          padding: '20px',
-          position: 'relative',
-          overflow: 'auto'
+          position: 'relative'
         }}>
-          <button 
-            onClick={closePanel}
-            style={{
-              position: 'absolute',
-              top: '15px',
-              right: '15px',
-              background: 'none',
-              border: 'none',
-              color: '#9ca3af',
-              cursor: 'pointer',
-              padding: '5px',
-              transition: 'color 0.2s'
-            }}
-          >
-            <FontAwesomeIcon icon={faTimes} style={{ width: '20px', height: '20px' }} />
-          </button>
+          <div style={{
+            backgroundColor: '#1a1a1a',
+            padding: '15px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid #333333'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '20px'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <FontAwesomeIcon icon={faUser} style={{ color: '#9ca3af' }} />
+                <span style={{ color: '#e5e7eb' }}>{playerInfo.name}</span>
+                <span style={{ color: '#9ca3af' }}>(ID: {playerInfo.id})</span>
+              </div>
+              <div style={{
+                backgroundColor: '#2a2a2a',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                color: '#e5e7eb'
+              }}>
+                {playerInfo.role}
+              </div>
+            </div>
 
-          {renderPage()}
-        </main>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '15px'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: '#9ca3af'
+              }}>
+                <FontAwesomeIcon icon={faFlag} />
+                <span>{playerInfo.reports} reports</span>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: '#9ca3af'
+              }}>
+                <FontAwesomeIcon icon={faBan} />
+                <span>{playerInfo.bans} bans</span>
+              </div>
+              <button 
+                onClick={closePanel}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#9ca3af',
+                  cursor: 'pointer',
+                  padding: '5px',
+                  transition: 'color 0.2s',
+                  marginLeft: '10px'
+                }}
+              >
+                <FontAwesomeIcon icon={faTimes} style={{ width: '20px', height: '20px' }} />
+              </button>
+            </div>
+          </div>
+
+          <main style={{
+            flex: 1,
+            overflow: 'auto',
+            padding: '20px'
+          }}>
+            {renderPage()}
+          </main>
+        </div>
       </div>
     </div>
   );
