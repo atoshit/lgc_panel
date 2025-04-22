@@ -24,7 +24,6 @@ local function togglePanel()
     if isVisible then
         SetNuiFocus(true, true)
         SetNuiFocusKeepInput(false)
-        updateStats()
     else
         SetNuiFocus(false, false)
         SetNuiFocusKeepInput(false)
