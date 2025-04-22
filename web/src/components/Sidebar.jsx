@@ -6,19 +6,19 @@
 
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faHome,
-  faUsers,
-  faTriangleExclamation,
-  faUserShield
+import {
+    faHome,
+    faUsers,
+    faUserShield,
+    faFlag
 } from '@fortawesome/free-solid-svg-icons';
 
-function Sidebar({ onPageChange, currentPage, version }) {
+function Sidebar({ onPageChange, currentPage, version, permissions }) {
   const menuItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: faHome },
-    { id: 'players', name: 'Joueurs', icon: faUsers },
-    { id: 'reports', name: 'Reports', icon: faTriangleExclamation },
-    { id: 'roles', name: 'Rôles', icon: faUserShield },
+    { id: 'dashboard', label: 'Dashboard', icon: faHome, permission: 'panel.access' },
+    { id: 'players', label: 'Joueurs', icon: faUsers, permission: 'panel.players.view' },
+    { id: 'reports', label: 'Reports', icon: faFlag, permission: 'panel.reports.view' },
+    { id: 'roles', label: 'Rôles', icon: faUserShield, permission: 'panel.roles.manage' }
   ];
 
   return (
@@ -36,10 +36,10 @@ function Sidebar({ onPageChange, currentPage, version }) {
         flexDirection: 'column',
         gap: '0.25rem'
       }}>
-        {menuItems.map((item) => (
+        {menuItems.map(item => (
           <button
             key={item.id}
-            onClick={() => onPageChange(item.id)}
+            onClick={() => permissions[item.permission] && onPageChange(item.id)}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -54,11 +54,13 @@ function Sidebar({ onPageChange, currentPage, version }) {
               textAlign: 'left',
               width: '100%',
               fontSize: '0.9rem',
-              fontWeight: currentPage === item.id ? '600' : 'normal'
+              fontWeight: currentPage === item.id ? '600' : 'normal',
+              opacity: permissions[item.permission] ? 1 : 0.5,
+              pointerEvents: permissions[item.permission] ? 'auto' : 'none'
             }}
           >
             <FontAwesomeIcon icon={item.icon} style={{ width: '1.25rem' }} />
-            <span>{item.name}</span>
+            <span>{item.label}</span>
           </button>
         ))}
       </nav>

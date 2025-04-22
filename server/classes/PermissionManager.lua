@@ -96,9 +96,50 @@ function PermissionManager:assignRole(identifier, roleName)
         return false
     end
 
-    self.userRoles:set(identifier, roleName)
-    self.isDirty = true
-    return true
+    -- Vérifier si l'assignation existe déjà
+    local exists = MySQL.scalar.await('SELECT 1 FROM lgc_user_roles WHERE identifier = ?', {identifier})
+    
+    local success
+    if exists then
+        -- Mettre à jour le rôle existant
+        success = MySQL.update.await('UPDATE lgc_user_roles SET role = ? WHERE identifier = ?', {
+            roleName,
+            identifier
+        })
+    else
+        -- Créer une nouvelle assignation
+        success = MySQL.insert.await('INSERT INTO lgc_user_roles (identifier, role) VALUES (?, ?)', {
+            identifier,
+            roleName
+        })
+    end
+
+    if success then
+        self.userRoles:set(identifier, roleName)
+        self.isDirty = true
+        return true
+    end
+
+    return false
+end
+
+---Retire un rôle à un utilisateur
+---@param identifier string
+---@return boolean
+function PermissionManager:removeRole(identifier)
+    -- Sauvegarder en base de données d'abord
+    local success = MySQL.query.await('DELETE FROM lgc_user_roles WHERE identifier = ?', {
+        identifier
+    })
+
+    if success then
+        -- Si la sauvegarde réussit, mettre à jour le cache
+        self.userRoles:remove(identifier)
+        self.isDirty = true
+        return true
+    end
+
+    return false
 end
 
 ---Vérifie si un utilisateur a une permission
@@ -119,31 +160,22 @@ function PermissionManager:hasPermission(identifier, permission)
     return role.permissions[permission] == true
 end
 
-function PermissionManager:saveIfNeeded()
-    if not self.isDirty then
+function PermissionManager:loadData()
+    -- Charger d'abord les rôles
+    local roles = MySQL.query.await('SELECT * FROM lgc_roles')
+    if not roles then
+        print('^1[ERROR] Impossible de charger les rôles depuis la base de données^0')
         return
     end
 
-    print('^3[INFO] Sauvegarde des rôles en cours...^0')
-    
-    self.roles:forEach(function(name, role)
-        MySQL.insert('REPLACE INTO lgc_roles (name, label, permissions, created_by_name, created_by_license) VALUES (?, ?, ?, ?, ?)', {
-            name,
-            role.label,
-            json.encode(role.permissions),
-            role.created_by_name,
-            role.created_by_license
-        })
-    end)
-
-    self.isDirty = false
-    print('^2[SUCCESS] Rôles sauvegardés avec succès^0')
-end
-
-function PermissionManager:loadData()
-    local roles = MySQL.query.await('SELECT * FROM lgc_roles')
+    -- Charger ensuite les assignations de rôles
     local userRoles = MySQL.query.await('SELECT * FROM lgc_user_roles')
+    if not userRoles then
+        print('^1[ERROR] Impossible de charger les assignations de rôles depuis la base de données^0')
+        return
+    end
 
+    -- Charger les rôles dans le cache
     for i = 1, #roles do
         local role = roles[i]
         self.roles:set(role.name, {
@@ -156,10 +188,69 @@ function PermissionManager:loadData()
         })
     end
 
+    -- Charger les assignations dans le cache
     for i = 1, #userRoles do
         local userRole = userRoles[i]
-        self.userRoles:set(userRole.identifier, userRole.role)
+        -- Vérifier que le rôle existe toujours
+        if self.roles:exists(userRole.role) then
+            self.userRoles:set(userRole.identifier, userRole.role)
+        else
+            print('^3[WARNING] Rôle invalide trouvé pour ' .. userRole.identifier .. '^0')
+        end
     end
+
+    print('^2[SUCCESS] Données chargées : ' .. #roles .. ' rôles et ' .. #userRoles .. ' assignations^0')
+end
+
+function PermissionManager:saveIfNeeded()
+    if not self.isDirty then
+        return
+    end
+
+    print('^3[INFO] Sauvegarde des rôles en cours...^0')
+    
+    -- Sauvegarder les rôles
+    self.roles:forEach(function(name, role)
+        local exists = MySQL.scalar.await('SELECT 1 FROM lgc_roles WHERE name = ?', {name})
+        
+        if exists then
+            MySQL.update('UPDATE lgc_roles SET label = ?, permissions = ?, created_by_name = ?, created_by_license = ? WHERE name = ?', {
+                role.label,
+                json.encode(role.permissions),
+                role.created_by_name,
+                role.created_by_license,
+                name
+            })
+        else
+            MySQL.insert('INSERT INTO lgc_roles (name, label, permissions, created_by_name, created_by_license) VALUES (?, ?, ?, ?, ?)', {
+                name,
+                role.label,
+                json.encode(role.permissions),
+                role.created_by_name,
+                role.created_by_license
+            })
+        end
+    end)
+
+    -- Sauvegarder les assignations de rôles
+    self.userRoles:forEach(function(identifier, roleName)
+        local exists = MySQL.scalar.await('SELECT 1 FROM lgc_user_roles WHERE identifier = ?', {identifier})
+        
+        if exists then
+            MySQL.update('UPDATE lgc_user_roles SET role = ? WHERE identifier = ?', {
+                roleName,
+                identifier
+            })
+        else
+            MySQL.insert('INSERT INTO lgc_user_roles (identifier, role) VALUES (?, ?)', {
+                identifier,
+                roleName
+            })
+        end
+    end)
+
+    self.isDirty = false
+    print('^2[SUCCESS] Données sauvegardées avec succès^0')
 end
 
 return PermissionManager 

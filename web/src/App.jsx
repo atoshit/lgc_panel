@@ -18,6 +18,7 @@ function App() {
     reports: 0,
     bans: 0
   });
+  const [permissions, setPermissions] = useState({});
 
   const closePanel = () => {
     setVisible(false);
@@ -41,6 +42,7 @@ function App() {
         }
         if (data.data.playerInfo) {
           setPlayerInfo(data.data.playerInfo);
+          setPermissions(data.data.playerInfo.permissions || {});
         }
       }
     });
@@ -57,16 +59,33 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [visible]);
 
+  const canAccess = (permission) => {
+    return permissions[permission] === true;
+  };
+
   const renderPage = () => {
+    // Si l'utilisateur n'a aucun rôle, afficher un message sur le dashboard
+    if (currentPage === 'dashboard' && (!playerInfo.role || playerInfo.role === "Aucun rôle")) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-neutral-400">
+          <div className="text-2xl mb-4">Bienvenue sur le Panel Logic</div>
+          <div className="text-center max-w-md">
+            <p className="mb-2">Vous n'avez actuellement aucun rôle attribué.</p>
+            <p>Contactez un administrateur pour obtenir les permissions nécessaires.</p>
+          </div>
+        </div>
+      );
+    }
+
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard />;
       case 'players':
-        return <Players />;
+        return canAccess('panel.players.view') ? <Players /> : null;
       case 'reports':
-        return <Reports />;
+        return canAccess('panel.reports.view') ? <Reports /> : null;
       case 'roles':
-        return <Roles />;
+        return canAccess('panel.roles.manage') ? <Roles /> : null;
       default:
         return <Dashboard />;
     }
@@ -101,6 +120,7 @@ function App() {
           onPageChange={setCurrentPage} 
           currentPage={currentPage}
           version={version}
+          permissions={permissions}
         />
         <div style={{
           flex: 1,

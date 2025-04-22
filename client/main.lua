@@ -8,16 +8,20 @@ local panelConfig <const> = CONF.panel
 local isVisible = false
 
 local function togglePanel()
-    isVisible = not isVisible
-    
-    local playerInfo = {
-        name = GetPlayerName(PlayerId()),
-        id = GetPlayerServerId(PlayerId()),
-        role = "Administrateur",
-        reports = 10,
-        bans = 15 
-    }
+    -- Vérifier d'abord si le joueur a un rôle
+    TriggerServerEvent('lgc_panel:checkAccess')
+end
 
+RegisterNetEvent('lgc_panel:accessCallback')
+AddEventHandler('lgc_panel:accessCallback', function(hasAccess)
+    if hasAccess then
+        isVisible = not isVisible
+        TriggerServerEvent('lgc_panel:getPlayerInfo')
+    end
+end)
+
+RegisterNetEvent('lgc_panel:playerInfoCallback')
+AddEventHandler('lgc_panel:playerInfoCallback', function(playerInfo)
     SendNUIMessage({
         action = 'setVisible',
         data = {
@@ -35,7 +39,7 @@ local function togglePanel()
         SetNuiFocus(false, false)
         SetNuiFocusKeepInput(false)
     end
-end
+end)
 
 RegisterNetEvent('lgc_panel:togglePanel')
 AddEventHandler('lgc_panel:togglePanel', togglePanel)
@@ -58,4 +62,19 @@ AddEventHandler('lgc_panel:reloadRoles', function()
     SendNUIMessage({
         action = 'reloadRoles'
     })
+end)
+
+RegisterNetEvent('lgc_panel:forceClose')
+AddEventHandler('lgc_panel:forceClose', function()
+    if isVisible then
+        isVisible = false
+        SetNuiFocus(false, false)
+        SetNuiFocusKeepInput(false)
+        SendNUIMessage({
+            action = 'setVisible',
+            data = {
+                show = false
+            }
+        })
+    end
 end)
