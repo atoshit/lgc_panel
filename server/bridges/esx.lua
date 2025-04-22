@@ -32,7 +32,6 @@ else
             log('Joueur ' .. xPlayer.source .. ' chargé', "info")
         end
     
-        print(maxClients)
         return players, maxClients 
     end 
 end
