@@ -171,14 +171,16 @@ function Roles() {
                   <span className="text-sm text-neutral-400">{role.name}</span>
                 </div>
                 <div className="space-x-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleDeleteRole(role.name)}
-                    className="px-3 py-1 bg-neutral-700 text-neutral-200 rounded-md hover:bg-neutral-600 transition-colors"
-                  >
-                    Supprimer
-                  </motion.button>
+                  {role.name !== 'admin' && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleDeleteRole(role.name)}
+                      className="px-3 py-1 bg-neutral-700 text-neutral-200 rounded-md hover:bg-neutral-600 transition-colors"
+                    >
+                      Supprimer
+                    </motion.button>
+                  )}
                 </div>
               </div>
             </div>
