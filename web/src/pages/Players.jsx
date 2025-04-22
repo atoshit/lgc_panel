@@ -7,8 +7,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faBriefcase, faStar, faFingerprint, faUser, faCopy, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faBriefcase, faStar, faFingerprint, faUser, faCopy, faChevronLeft, faChevronRight, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
+import { Menu } from '@headlessui/react'
 
 const PLAYERS_PER_PAGE = 20;
 
@@ -52,11 +53,9 @@ function Players() {
 
         window.addEventListener('message', handleMessage);
         fetchPlayers();
-        const interval = setInterval(fetchPlayers, 10000);
 
         return () => {
             window.removeEventListener('message', handleMessage);
-            clearInterval(interval);
         };
     }, []);
 
@@ -93,7 +92,6 @@ function Players() {
         currentPage * PLAYERS_PER_PAGE
     );
 
-    // Ajouter une fonction pour copier le texte
     const copyToClipboard = async (text) => {
         try {
             await navigator.clipboard.writeText(text);
@@ -108,7 +106,6 @@ function Players() {
                 theme: "dark",
             });
         } catch (err) {
-            // Fallback pour les navigateurs qui ne supportent pas l'API Clipboard
             const textArea = document.createElement('textarea');
             textArea.value = text;
             document.body.appendChild(textArea);
@@ -160,39 +157,75 @@ function Players() {
                             />
                         </div>
                         
-                        <select
-                            className="px-4 py-2.5 bg-neutral-800 rounded-lg border border-neutral-700 text-neutral-200 outline-none focus:border-neutral-600 transition-colors appearance-none cursor-pointer min-w-[160px]"
-                            value={filters.role}
-                            onChange={(e) => setFilters(f => ({ ...f, role: e.target.value }))}
-                        >
-                            <option value="" className="bg-neutral-800 text-neutral-200">Tous les rôles</option>
-                            {availableFilters.roles.map(role => (
-                                <option 
-                                    key={role} 
-                                    value={role} 
-                                    className="bg-neutral-800 text-neutral-200"
-                                >
-                                    {role}
-                                </option>
-                            ))}
-                        </select>
+                        <Menu as="div" className="relative">
+                            <Menu.Button className="px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg flex items-center gap-2 hover:bg-neutral-700 transition-colors">
+                                {filters.role || 'Rôle'}
+                                <FontAwesomeIcon icon={faChevronDown} className="w-3 h-3 text-neutral-500" />
+                            </Menu.Button>
+                            <Menu.Items className="absolute right-0 mt-2 w-48 bg-neutral-800 rounded-lg shadow-lg border border-neutral-700 py-1 z-20">
+                                <Menu.Item>
+                                    {({ active }) => (
+                                        <button
+                                            onClick={() => setFilters(f => ({ ...f, role: '' }))}
+                                            className={`w-full text-left px-4 py-2 text-sm ${
+                                                active ? 'bg-neutral-700 text-neutral-200' : 'text-neutral-400'
+                                            }`}
+                                        >
+                                            Tous les rôles
+                                        </button>
+                                    )}
+                                </Menu.Item>
+                                {availableFilters.roles.map(role => (
+                                    <Menu.Item key={role}>
+                                        {({ active }) => (
+                                            <button
+                                                onClick={() => setFilters(f => ({ ...f, role }))}
+                                                className={`w-full text-left px-4 py-2 text-sm ${
+                                                    active ? 'bg-neutral-700 text-neutral-200' : 'text-neutral-400'
+                                                }`}
+                                            >
+                                                {role}
+                                            </button>
+                                        )}
+                                    </Menu.Item>
+                                ))}
+                            </Menu.Items>
+                        </Menu>
 
-                        <select
-                            className="px-4 py-2.5 bg-neutral-800 rounded-lg border border-neutral-700 text-neutral-200 outline-none focus:border-neutral-600 transition-colors appearance-none cursor-pointer min-w-[160px]"
-                            value={filters.job}
-                            onChange={(e) => setFilters(f => ({ ...f, job: e.target.value }))}
-                        >
-                            <option value="" className="bg-neutral-800 text-neutral-200">Tous les métiers</option>
-                            {availableFilters.jobs.map(job => (
-                                <option 
-                                    key={job} 
-                                    value={job} 
-                                    className="bg-neutral-800 text-neutral-200"
-                                >
-                                    {job}
-                                </option>
-                            ))}
-                        </select>
+                        <Menu as="div" className="relative">
+                            <Menu.Button className="px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg flex items-center gap-2 hover:bg-neutral-700 transition-colors">
+                                {filters.job || 'Métier'}
+                                <FontAwesomeIcon icon={faChevronDown} className="w-3 h-3 text-neutral-500" />
+                            </Menu.Button>
+                            <Menu.Items className="absolute right-0 mt-2 w-48 bg-neutral-800 rounded-lg shadow-lg border border-neutral-700 py-1 z-20">
+                                <Menu.Item>
+                                    {({ active }) => (
+                                        <button
+                                            onClick={() => setFilters(f => ({ ...f, job: '' }))}
+                                            className={`w-full text-left px-4 py-2 text-sm ${
+                                                active ? 'bg-neutral-700 text-neutral-200' : 'text-neutral-400'
+                                            }`}
+                                        >
+                                            Tous les métiers
+                                        </button>
+                                    )}
+                                </Menu.Item>
+                                {availableFilters.jobs.map(job => (
+                                    <Menu.Item key={job}>
+                                        {({ active }) => (
+                                            <button
+                                                onClick={() => setFilters(f => ({ ...f, job }))}
+                                                className={`w-full text-left px-4 py-2 text-sm ${
+                                                    active ? 'bg-neutral-700 text-neutral-200' : 'text-neutral-400'
+                                                }`}
+                                            >
+                                                {job}
+                                            </button>
+                                        )}
+                                    </Menu.Item>
+                                ))}
+                            </Menu.Items>
+                        </Menu>
                     </div>
 
                     <div className="grid grid-cols-2 gap-x-8 gap-y-20">

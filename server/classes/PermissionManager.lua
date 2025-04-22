@@ -104,37 +104,12 @@ end
 ---@return boolean
 function PermissionManager:assignRole(identifier, roleName)
     if not self.roles:exists(roleName) then
+        log("Le rôle " .. roleName .. " n'existe pas", "warn")
         return false
     end
-
-    local roleExists = MySQL.scalar.await('SELECT 1 FROM lgc_roles WHERE name = ?', {roleName})
-    if not roleExists then
-        print('^1[ERROR] Le rôle ' .. roleName .. ' n\'existe pas en base de données^0')
-        return false
-    end
-
-    local exists = MySQL.scalar.await('SELECT 1 FROM lgc_user_roles WHERE identifier = ?', {identifier})
     
-    local success
-    if exists then
-        success = MySQL.update.await('UPDATE lgc_user_roles SET role = ? WHERE identifier = ?', {
-            roleName,
-            identifier
-        })
-    else
-        success = MySQL.insert.await('INSERT INTO lgc_user_roles (identifier, role) VALUES (?, ?)', {
-            identifier,
-            roleName
-        })
-    end
-
-    if success then
-        self.userRoles:set(identifier, roleName)
-        self.isDirty = true
-        return true
-    end
-
-    return false
+    local success = self.userRoles:set(identifier, roleName)
+    return success
 end
 
 ---Retire un rôle à un utilisateur
@@ -160,28 +135,21 @@ end
 ---@return boolean
 function PermissionManager:hasPermission(identifier, permission)
     local roleName = self.userRoles:get(identifier)
-    if not roleName then
-        return false
-    end
-
+    if not roleName then return false end
     local role = self.roles:get(roleName)
-    if not role then
-        return false
-    end
-
-    return role.permissions[permission] == true
+    return role and role.permissions[permission] or false
 end
 
 function PermissionManager:loadData()
     local roles = MySQL.query.await('SELECT * FROM lgc_roles')
     if not roles then
-        print('^1[ERROR] Impossible de charger les rôles depuis la base de données^0')
+        err('Impossible de charger les rôles depuis la base de données')
         return
     end
 
     local userRoles = MySQL.query.await('SELECT * FROM lgc_user_roles')
     if not userRoles then
-        print('^1[ERROR] Impossible de charger les assignations de rôles depuis la base de données^0')
+        err('Impossible de charger les assignations de rôles depuis la base de données')
         return
     end
 
@@ -202,11 +170,9 @@ function PermissionManager:loadData()
         if self.roles:exists(userRole.role) then
             self.userRoles:set(userRole.identifier, userRole.role)
         else
-            print('^3[WARNING] Rôle invalide trouvé pour ' .. userRole.identifier .. '^0')
+            log('Rôle invalide trouvé pour ' .. userRole.identifier, "warn")
         end
     end
-
-    log('Données chargées : ' .. #roles .. ' rôles et ' .. #userRoles .. ' assignations', "info")
 end
 
 function PermissionManager:saveIfNeeded()
@@ -214,7 +180,7 @@ function PermissionManager:saveIfNeeded()
         return
     end
 
-    print('^3[INFO] Sauvegarde des rôles en cours...^0')
+    log('Sauvegarde des rôles en cours...', "info")
     
     self.roles:forEach(function(name, role)
         local exists = MySQL.scalar.await('SELECT 1 FROM lgc_roles WHERE name = ?', {name})
@@ -255,7 +221,7 @@ function PermissionManager:saveIfNeeded()
     end)
 
     self.isDirty = false
-    print('^2[SUCCESS] Données sauvegardées avec succès^0')
+    log('Données sauvegardées avec succès', "info")
 end
 
 return PermissionManager 

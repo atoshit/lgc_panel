@@ -11,7 +11,7 @@ RegisterNUICallback('getRoles', function(_, cb)
     
     local eventHandler
     eventHandler = RegisterNetEvent('lgc_panel:getRolesCallback', function(receivedRoles)
-        print('^3[DEBUG] Rôles reçus:', json.encode(receivedRoles))
+        log('Rôles reçus:', json.encode(receivedRoles), "debug")
         roles = receivedRoles
         
         cb({
