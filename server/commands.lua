@@ -57,13 +57,13 @@ RegisterCommand('rank', function(source, args)
     if success then
         if tonumber(target) then
             local playerName = GetPlayerName(tonumber(target))
-            print('^2[SUCCESS] Le rôle ' .. roleName .. ' a été attribué à ' .. playerName .. ' (' .. identifier .. ')^0')
+            log('^2[SUCCESS] Le rôle ' .. roleName .. ' a été attribué à ' .. playerName .. ' (' .. identifier .. ')^0', "info")
             syncPlayerPermissions(tonumber(target))
         else
-            print('^2[SUCCESS] Le rôle ' .. roleName .. ' a été attribué à ' .. identifier .. '^0')
+            log('^2[SUCCESS] Le rôle ' .. roleName .. ' a été attribué à ' .. identifier .. '^0', "info")
         end
     else
-        print('^1[ERROR] Impossible d\'attribuer le rôle^0')
+        log('Impossible d\'attribuer le rôle^0', "warn")
     end
 end)
 

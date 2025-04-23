@@ -13,7 +13,7 @@ import { Menu } from '@headlessui/react'
 
 const PLAYERS_PER_PAGE = 20;
 
-function Players() {
+function Players({ onPlayerSelect }) {
     const [players, setPlayers] = useState([]);
     const [filteredPlayers, setFilteredPlayers] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -236,7 +236,10 @@ function Players() {
                                 animate={{ opacity: 1, y: 0 }}
                             >
                                 <div className="p-4 bg-neutral-800 rounded-lg shadow-lg h-[250px] flex flex-col">
-                                    <div className="flex justify-between items-center mb-5">
+                                    <div 
+                                        onClick={() => onPlayerSelect(player.id)}
+                                        className="flex justify-between items-center cursor-pointer transition-colors hover:bg-neutral-700/50 -m-4 mb-0 p-4 rounded-t-lg"
+                                    >
                                         <div>
                                             <h3 className="text-lg font-semibold text-neutral-200 truncate max-w-[200px]">
                                                 {player.steamName} <span className="text-neutral-400">[{player.id}]</span>
@@ -249,7 +252,7 @@ function Players() {
                                         )}
                                     </div>
 
-                                    <div className="-mx-4 p-4 bg-neutral-900 flex-1">
+                                    <div className="-mx-4 mt-0 p-4 bg-neutral-900 flex-1">
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3 truncate">

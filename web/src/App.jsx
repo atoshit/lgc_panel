@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Players from './pages/Players';
 import Reports from './pages/Reports';
 import Roles from './pages/Roles';
+import PlayerActions from './pages/PlayerActions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faUser, faFlag, faBan, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer } from 'react-toastify';
@@ -25,6 +26,7 @@ function App() {
   const [serverInfo, setServerInfo] = useState({
     maxClients: 0
   });
+  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
 
   const closePanel = () => {
     setVisible(false);
@@ -92,7 +94,14 @@ function App() {
       case 'dashboard':
         return <Dashboard />;
       case 'players':
-        return canAccess('panel.players.view') ? <Players /> : null;
+        if (selectedPlayerId !== null) {
+          const selectedPlayer = players.find(p => p.id === selectedPlayerId);
+          return <PlayerActions 
+            player={selectedPlayer} 
+            onBack={() => setSelectedPlayerId(null)} 
+          />;
+        }
+        return canAccess('panel.players.view') ? <Players onPlayerSelect={setSelectedPlayerId} /> : null;
       case 'reports':
         return canAccess('panel.reports.view') ? <Reports /> : null;
       case 'roles':

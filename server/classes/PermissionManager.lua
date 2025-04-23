@@ -108,8 +108,19 @@ function PermissionManager:assignRole(identifier, roleName)
         return false
     end
     
-    local success = self.userRoles:set(identifier, roleName)
-    return success
+    local success = MySQL.insert.await('INSERT INTO lgc_user_roles (identifier, role) VALUES (?, ?) ON DUPLICATE KEY UPDATE role = ?', {
+        identifier,
+        roleName,
+        roleName
+    })
+
+    if success then
+        self.userRoles:set(identifier, roleName)
+        self.isDirty = true
+        return true
+    end
+
+    return false
 end
 
 ---Retire un rôle à un utilisateur

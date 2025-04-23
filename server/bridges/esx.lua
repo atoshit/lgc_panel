@@ -10,9 +10,8 @@ else
     log('Chargement du bridge ESX...', "info")
 
     local ESX = exports['es_extended']:getSharedObject()
-    local playersCache = Cache.new() -- Utilisation de la classe Cache existante
+    local playersCache = Cache.new() 
 
-    -- Fonction pour initialiser/rafraîchir le cache des joueurs
     local function refreshPlayersCache()
         local xPlayers = ESX.GetExtendedPlayers()
 
@@ -39,9 +38,7 @@ else
         TriggerClientEvent('lgc_panel:playersUpdated', -1, playersCache:getAll())
     end
 
-    -- Initialiser le cache au démarrage
     CreateThread(function()
-        -- Attendre que ESX et PermissionManager soient complètement initialisés
         while not ESX or not lgc.permissionManager do 
             Wait(100) 
             log('Attente de l\'initialisation...', "debug")

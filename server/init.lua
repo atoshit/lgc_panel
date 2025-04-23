@@ -71,13 +71,3 @@ print("^2[Logic Panel] ^7Version: ^7" .. lgc.version)
 print("^2[Logic Panel] ^7Author: ^7" .. lgc.author)
 print("^2[Logic Panel] ^7Description: ^7" .. lgc.description)
 print("^2[Logic Panel] ^7Repository: ^7" .. lgc.repository)
-
-AddEventHandler('onResourceStop', function(resourceName)
-    if resourceName == GetCurrentResourceName() then
-        if lgc.permissionManager then
-            print('^3[INFO] Sauvegarde des données en cours...^0')
-            lgc.permissionManager:saveIfNeeded()
-            print('^2[SUCCESS] Données sauvegardées avec succès^0')
-        end
-    end
-end) 
