@@ -12,96 +12,58 @@ else
     local playersCache = Cache.new()
 
     local function refreshPlayersCache()
-        local qbPlayers = QBCore.Functions.GetQBPlayers()
+        local Players = QBCore.Functions.GetQBPlayers()
 
-        for i = 1, #qbPlayers do
-            local qPlayer = qbPlayers[i]
-            local identifier = qPlayer.PlayerData.license
-            local role = lgc.permissionManager.userRoles:get(identifier)
-            local roleLabel = lgc.permissionManager.roles:get(role).label
+        for _, player in pairs(Players) do
+            local identifier = player.PlayerData.license
+            local role = lgc.permissionManager.userRoles:get("license:" .. identifier)
+            local roleLabel = lgc.permissionManager.roles:get(role)?.label or "Pas de rôle trouvé"
 
-            playersCache:set(qPlayer.PlayerData.source, {
-                id = qPlayer.PlayerData.source,
-                steamName = GetPlayerName(qPlayer.PlayerData.source),
-                name = qPlayer.PlayerData.charinfo.firstname .. ' ' .. qPlayer.PlayerData.charinfo.lastname,
+            playersCache:set(player.PlayerData.source, {
+                id = player.PlayerData.source,
+                steamName = GetPlayerName(player.PlayerData.source),
+                name = player.PlayerData.charinfo.firstname .. ' ' .. player.PlayerData.charinfo.lastname,
                 identifier = identifier,
                 role = roleLabel,
                 job = {
-                    name = qPlayer.PlayerData.job.name,
-                    label = qPlayer.PlayerData.job.label,
-                    grade = qPlayer.PlayerData.job.grade.level
+                    name = player.PlayerData.job.name,
+                    label = player.PlayerData.job.label,
+                    grade = player.PlayerData.job.grade.level
                 },
-                group = qPlayer.PlayerData.group
+                group = QBCore.Functions.GetPermission(player.PlayerData.source)
             })
         end
         TriggerClientEvent('lgc_panel:playersUpdated', -1, playersCache:getAll())
     end
 
-    CreateThread(function()
-        while not QBCore or not lgc.permissionManager do 
-            Wait(100)
-            log('Attente de l\'initialisation...', "debug")
-        end
-        
-        log('Démarrage de l\'initialisation du cache des joueurs...', "info")
-        
-        local Players = QBCore.Functions.GetQBPlayers()
+    RegisterNetEvent('QBCore:Server:PlayerLoaded', function(Player)
+        local identifier = Player.PlayerData.license
+        local role = lgc.permissionManager.userRoles:get("license:" .. identifier)
+        local roleLabel = lgc.permissionManager.roles:get(role)?.label or "Pas de rôle trouvé"
 
-        for i = 1, #Players do
-            local qPlayer = Players[i]
-            local identifier = qPlayer.PlayerData.license
-            
-            local role = lgc.permissionManager.userRoles:get(identifier)
-            local roleLabel = lgc.permissionManager.roles:get(role)?.label or "Pas de rôle trouvé"
-
-            playersCache:set(qPlayer.PlayerData.source, {
-                id = qPlayer.PlayerData.source,
-                steamName = GetPlayerName(qPlayer.PlayerData.source),
-                name = qPlayer.PlayerData.charinfo.firstname .. ' ' .. qPlayer.PlayerData.charinfo.lastname,
-                identifier = identifier,
-                role = roleLabel,
-                job = {
-                    name = qPlayer.PlayerData.job.name,
-                    label = qPlayer.PlayerData.job.label,
-                    grade = qPlayer.PlayerData.job.grade.level
-                },
-                group = qPlayer.PlayerData.group
-            })
-            
-            log('Joueur ' .. identifier .. ' ajouté au cache', "debug")
-        end
-        
-        TriggerClientEvent('lgc_panel:playersUpdated', -1, playersCache:getAll())
-        log('Cache des joueurs initialisé avec ' .. #playersCache:getAll() .. ' joueurs', "info")
-    end)
-
-    AddEventHandler('QBCore:Server:PlayerLoaded', function(qPlayer)
-        local identifier = qPlayer.PlayerData.license
-        local role = lgc.permissionManager.userRoles:get(identifier)
-        local roleLabel = lgc.permissionManager.roles:get(role).label
-
-        playersCache:set(qPlayer.PlayerData.source, {
-            id = qPlayer.PlayerData.source,
-            steamName = GetPlayerName(qPlayer.PlayerData.source),
-            name = qPlayer.PlayerData.charinfo.firstname .. ' ' .. qPlayer.PlayerData.charinfo.lastname,
+        playersCache:set(Player.PlayerData.source, {
+            id = Player.PlayerData.source,
+            steamName = GetPlayerName(Player.PlayerData.source),
+            name = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname,
             identifier = identifier,
             role = roleLabel,
             job = {
-                name = qPlayer.PlayerData.job.name,
-                label = qPlayer.PlayerData.job.label,
-                grade = qPlayer.PlayerData.job.grade.level
+                name = Player.PlayerData.job.name,
+                label = Player.PlayerData.job.label,
+                grade = Player.PlayerData.job.grade.level
             },
-            group = qPlayer.PlayerData.group
+            group = QBCore.Functions.GetPermission(Player.PlayerData.source)
         })
+
         TriggerClientEvent('lgc_panel:playersUpdated', -1, playersCache:getAll())
     end)
 
-    AddEventHandler('QBCore:Server:PlayerUnload', function(source)
+    AddEventHandler('playerDropped', function()
         playersCache:remove(source)
         TriggerClientEvent('lgc_panel:playersUpdated', -1, playersCache:getAll())
     end)
 
-    AddEventHandler('QBCore:Server:OnJobUpdate', function(source, job)
+    RegisterNetEvent('QBCore:Server:OnJobUpdate', function(source, job)
         local player = playersCache:get(source)
         if player then
             player.job = {
@@ -117,4 +79,42 @@ else
     function lgc.getPlayers()
         return playersCache:getAll(), GetConvarInt('sv_maxclients', 32)
     end
+
+    RegisterNetEvent('lgc_panel:getPlayerInfo')
+    AddEventHandler('lgc_panel:getPlayerInfo', function(playerId)
+        local source = source
+        
+        local staffIdentifier = GetPlayerIdentifierByType(source, 'license')
+        if not lgc.permissionManager:hasPermission(staffIdentifier, 'panel.players.view') then
+            return
+        end
+
+        local Player = QBCore.Functions.GetPlayer(playerId)
+        if not Player then return end
+
+        local playerPed = GetPlayerPed(playerId)
+        local playerInfo = {
+            id = playerId,
+            name = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname,
+            steamName = GetPlayerName(playerId),
+            job = {
+                name = Player.PlayerData.job.name,
+                label = Player.PlayerData.job.label,
+                grade = Player.PlayerData.job.grade.level
+            },
+            group = QBCore.Functions.GetPermission(playerId),
+            identifier = Player.PlayerData.license,
+            steam = GetPlayerIdentifierByType(playerId, 'steam') or 'N/A',
+            endpoint = GetPlayerEndpoint(playerId) or 'N/A',
+            discord = GetPlayerIdentifierByType(playerId, 'discord') or 'N/A',
+            stats = {
+                health = GetEntityHealth(playerPed),
+                armor = GetPedArmour(playerPed) or 0,
+                hunger = Player.PlayerData.metadata.hunger or 100,
+                thirst = Player.PlayerData.metadata.thirst or 100
+            }
+        }
+
+        TriggerClientEvent('lgc_panel:receivePlayerInfo', source, playerInfo)
+    end)
 end
