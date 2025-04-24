@@ -120,4 +120,56 @@ else
     function lgc.getPlayers()
         return playersCache:getAll(), GetConvarInt('sv_maxclients', 32)
     end
+
+    RegisterNetEvent('lgc_panel:getPlayerInfo')
+    AddEventHandler('lgc_panel:getPlayerInfo', function(playerId)
+        local source = source
+        
+        local staffIdentifier = GetPlayerIdentifierByType(source, 'license')
+        if not lgc.permissionManager:hasPermission(staffIdentifier, 'panel.players.view') then
+            return
+        end
+
+        local xPlayer = ESX.GetPlayerFromId(playerId)
+
+        if not xPlayer then return end
+
+        local thirst = 100
+        local hunger = 100
+
+        TriggerEvent('esx_status:getStatus', playerId, 'hunger', function(hunger)
+            hunger = hunger.percent
+        end)
+
+        TriggerEvent('esx_status:getStatus', playerId, 'thirst', function(thirst)
+            thirst = thirst.percent
+        end)
+
+        local playerPed = GetPlayerPed(playerId)
+        local playerInfo = {
+            id = playerId,
+            name = xPlayer.getName(),
+            steamName = GetPlayerName(playerId),
+            job = {
+                name = xPlayer.job.name,
+                label = xPlayer.job.label,
+                grade = xPlayer.job.grade
+            },
+            group = xPlayer.getGroup(),
+            identifier = xPlayer.identifier,
+            steam = GetPlayerIdentifierByType(playerId, 'steam') or 'N/A',
+            endpoint = GetPlayerEndpoint(playerId) or 'N/A',
+            discord = GetPlayerIdentifierByType(playerId, 'discord') or 'N/A',
+            stats = {
+                health = GetEntityHealth(playerPed),
+                armor = GetPedArmour(playerPed) or 0,
+                hunger = hunger,
+                thirst = thirst
+            }
+        }
+
+        print(json.encode(playerInfo))
+
+        TriggerClientEvent('lgc_panel:receivePlayerInfo', source, playerInfo)
+    end)
 end

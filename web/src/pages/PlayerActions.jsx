@@ -1,11 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faArrowLeft, 
-    faUser, 
     faBriefcase, 
-    faFingerprint, 
-    faNetworkWired,
     faTriangleExclamation,
     faBan,
     faRightFromBracket,
@@ -32,20 +29,44 @@ import {
     faHeart,
     faDroplet,
     faUtensils,
-    faHome,
-    faHistory
+    faHistory,
+    faHome
 } from '@fortawesome/free-solid-svg-icons';
 import {
-    faDiscord,
-    faRedditAlien,
-    faSteam
+    faRedditAlien
 } from '@fortawesome/free-brands-svg-icons';
 import { Menu } from '@headlessui/react';
+import { fetchNui } from '../utils/nui';
 
 function PlayerActions({ player, onBack }) {
     const [currentTab, setCurrentTab] = useState('main');
+    const [playerInfo, setPlayerInfo] = useState(null);
+
+    const fetchPlayerInfo = useCallback(async () => {
+        await fetchNui('getPlayerInfo', { playerId: player?.id });
+    }, [player?.id]);
+
+    useEffect(() => {
+        const handlePlayerInfo = (event) => {
+            if (event.data.type === 'playerInfoUpdate') {
+                setPlayerInfo(event.data.data);
+            }
+        };
+
+        window.addEventListener('message', handlePlayerInfo);
+        
+        return () => window.removeEventListener('message', handlePlayerInfo);
+    }, []);
+
+    useEffect(() => {
+        if (player?.id) {
+            fetchPlayerInfo();
+        }
+    }, [player, fetchPlayerInfo]);
 
     if (!player) return null;
+
+
 
     const jobs = [
         { name: 'police', label: 'LSPD' },
@@ -112,125 +133,135 @@ function PlayerActions({ player, onBack }) {
             {currentTab === 'main' ? (
                 <div className="flex gap-6">
                     <div className="w-1/3 space-y-4">
-                        <div className="bg-neutral-800 rounded-lg p-4 space-y-3">
+                        <div className="bg-neutral-800 rounded-lg p-6 space-y-4">
                             <h3 className="text-lg font-semibold text-neutral-200 border-b border-neutral-700 pb-2">
                                 Informations du joueur
                             </h3>
                             
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-3 text-neutral-300">
-                                    <FontAwesomeIcon icon={faUser} className="w-5" />
-                                    <div>
-                                        <div className="text-sm text-neutral-400">Nom RP</div>
-                                        <div>{player.name}</div>
+                            {playerInfo ? (
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <span className="text-neutral-400">ID</span>
+                                            <p className="text-neutral-200">{playerInfo.id}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-neutral-400">Steam</span>
+                                            <p className="text-neutral-200">{playerInfo.steamName}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-neutral-400">Nom RP</span>
+                                            <p className="text-neutral-200">{playerInfo.name}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-neutral-400">Métier</span>
+                                            <p className="text-neutral-200">{playerInfo.job.label} [{playerInfo.job.grade}]</p>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="flex items-center gap-3 text-neutral-300">
-                                    <FontAwesomeIcon icon={faBriefcase} className="w-5" />
-                                    <div>
-                                        <div className="text-sm text-neutral-400">Métier</div>
-                                        <div>{player.job.label} - Grade {player.job.grade}</div>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <span className="text-neutral-400">License</span>
+                                            <p className="text-neutral-200 truncate" title={playerInfo.identifier}>
+                                                {playerInfo.identifier}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="text-neutral-400">Steam ID</span>
+                                            <p className="text-neutral-200 truncate" title={playerInfo.steam}>
+                                                {playerInfo.steam}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="text-neutral-400">Discord ID</span>
+                                            <p className="text-neutral-200 truncate" title={playerInfo.discord}>
+                                                {playerInfo.discord}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="text-neutral-400">IP</span>
+                                            <p className="text-neutral-200 truncate" title={playerInfo.endpoint}>
+                                                {playerInfo.endpoint}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="flex items-center gap-3 text-neutral-300">
-                                    <FontAwesomeIcon icon={faFingerprint} className="w-5 flex-shrink-0" />
-                                    <div className="min-w-0">
-                                        <div className="text-sm text-neutral-400">License</div>
-                                        <div className="text-sm font-mono truncate">{player.identifier}</div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3 text-neutral-300">
-                                    <FontAwesomeIcon icon={faSteam} className="w-5 flex-shrink-0" />
-                                    <div className="min-w-0">
-                                        <div className="text-sm text-neutral-400">Steam ID</div>
-                                        <div className="text-sm font-mono truncate">STEAM_0:1:123456789</div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3 text-neutral-300">
-                                    <FontAwesomeIcon icon={faNetworkWired} className="w-5 flex-shrink-0" />
-                                    <div className="min-w-0">
-                                        <div className="text-sm text-neutral-400">Adresse IP</div>
-                                        <div className="text-sm font-mono truncate">192.168.1.1</div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3 text-neutral-300">
-                                    <FontAwesomeIcon icon={faDiscord} className="w-5 flex-shrink-0" />
-                                    <div className="min-w-0">
-                                        <div className="text-sm text-neutral-400">Discord ID</div>
-                                        <div className="text-sm font-mono truncate">123456789123456789</div>
-                                    </div>
-                                </div>
-
-                                {/* Séparateur */}
-                                <div className="border-t border-neutral-700 pt-3">
-                                    {/* Vie */}
-                                    <div className="space-y-1">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-2 text-red-400">
-                                                <FontAwesomeIcon icon={faHeart} className="text-xs" />
-                                                <span>Vie</span>
+                                    <div className="border-t border-neutral-700 pt-3">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <div className="flex items-center gap-2 text-red-400">
+                                                    <FontAwesomeIcon icon={faHeart} className="text-xs" />
+                                                    <span>Vie</span>
+                                                </div>
+                                                <span className="text-neutral-400">{playerInfo.stats.health}%</span>
                                             </div>
-                                            <span className="text-neutral-400">100%</span>
-                                        </div>
-                                        <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
-                                            <div className="h-full bg-red-500 rounded-full" style={{ width: '100%' }}></div>
-                                        </div>
-                                    </div>
-
-                                    {/* Armure */}
-                                    <div className="space-y-1 mt-3">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-2 text-blue-400">
-                                                <FontAwesomeIcon icon={faShield} className="text-xs" />
-                                                <span>Armure</span>
+                                            <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-red-500 rounded-full" 
+                                                    style={{ width: `${playerInfo.stats.health}%` }}
+                                                ></div>
                                             </div>
-                                            <span className="text-neutral-400">100%</span>
                                         </div>
-                                        <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
-                                            <div className="h-full bg-blue-500 rounded-full" style={{ width: '100%' }}></div>
-                                        </div>
-                                    </div>
 
-                                    {/* Faim */}
-                                    <div className="space-y-1 mt-3">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-2 text-orange-400">
-                                                <FontAwesomeIcon icon={faUtensils} className="text-xs" />
-                                                <span>Faim</span>
+                                        <div className="space-y-1 mt-3">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <div className="flex items-center gap-2 text-blue-400">
+                                                    <FontAwesomeIcon icon={faShield} className="text-xs" />
+                                                    <span>Armure</span>
+                                                </div>
+                                                <span className="text-neutral-400">{playerInfo.stats.armor}%</span>
                                             </div>
-                                            <span className="text-neutral-400">100%</span>
+                                            <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-blue-500 rounded-full" 
+                                                    style={{ width: `${playerInfo.stats.armor}%` }}
+                                                ></div>
+                                            </div>
                                         </div>
-                                        <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
-                                            <div className="h-full bg-orange-500 rounded-full" style={{ width: '100%' }}></div>
-                                        </div>
-                                    </div>
 
-                                    {/* Soif */}
-                                    <div className="space-y-1 mt-3">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-2 text-cyan-400">
-                                                <FontAwesomeIcon icon={faDroplet} className="text-xs" />
-                                                <span>Soif</span>
+                                        <div className="space-y-1 mt-3">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <div className="flex items-center gap-2 text-orange-400">
+                                                    <FontAwesomeIcon icon={faUtensils} className="text-xs" />
+                                                    <span>Faim</span>
+                                                </div>
+                                                <span className="text-neutral-400">{playerInfo.stats.hunger}%</span>
                                             </div>
-                                            <span className="text-neutral-400">100%</span>
+                                            <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-orange-500 rounded-full" 
+                                                    style={{ width: `${playerInfo.stats.hunger}%` }}
+                                                ></div>
+                                            </div>
                                         </div>
-                                        <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
-                                            <div className="h-full bg-cyan-500 rounded-full" style={{ width: '100%' }}></div>
+
+                                        <div className="space-y-1 mt-3">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <div className="flex items-center gap-2 text-cyan-400">
+                                                    <FontAwesomeIcon icon={faDroplet} className="text-xs" />
+                                                    <span>Soif</span>
+                                                </div>
+                                                <span className="text-neutral-400">{playerInfo.stats.thirst}%</span>
+                                            </div>
+                                            <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-cyan-500 rounded-full" 
+                                                    style={{ width: `${playerInfo.stats.thirst}%` }}
+                                                ></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="text-neutral-400 text-sm italic">
+                                    Chargement des informations...
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     <div className="flex-1">
                         <div className="space-y-4">
-                            {/* Sanctions */}
                             <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-neutral-400 uppercase">Sanctions</h4>
                                 <div className="flex flex-wrap gap-1.5">
@@ -249,7 +280,6 @@ function PlayerActions({ player, onBack }) {
                                 </div>
                             </div>
 
-                            {/* Administration */}
                             <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-neutral-400 uppercase">Administration</h4>
                                 <div className="flex flex-wrap gap-1.5">
@@ -309,7 +339,6 @@ function PlayerActions({ player, onBack }) {
                                 </div>
                             </div>
 
-                            {/* Actions sur le joueur */}
                             <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-neutral-400 uppercase">Actions sur le joueur</h4>
                                 <div className="flex flex-wrap gap-1.5">
@@ -344,7 +373,6 @@ function PlayerActions({ player, onBack }) {
                                 </div>
                             </div>
 
-                            {/* Téléportation */}
                             <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-neutral-400 uppercase">Téléportation</h4>
                                 <div className="flex flex-wrap gap-1.5">
@@ -367,7 +395,6 @@ function PlayerActions({ player, onBack }) {
                                 </div>
                             </div>
 
-                            {/* Actions sur le véhicule */}
                             <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-neutral-400 uppercase">Actions sur le véhicule</h4>
                                 <div className="flex flex-wrap gap-1.5">
@@ -394,7 +421,6 @@ function PlayerActions({ player, onBack }) {
                                 </div>
                             </div>
 
-                            {/* Autres actions */}
                             <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-neutral-400 uppercase">Autres actions</h4>
                                 <div className="flex flex-wrap gap-1.5">
@@ -425,7 +451,6 @@ function PlayerActions({ player, onBack }) {
                 </div>
             ) : (
                 <div className="flex flex-col gap-6">
-                    {/* Historique des sanctions */}
                     <div className="bg-neutral-800 rounded-lg p-4">
                         <h3 className="text-lg font-semibold text-neutral-200 border-b border-neutral-700 pb-2 mb-4 flex items-center gap-2">
                             <FontAwesomeIcon icon={faTriangleExclamation} />
@@ -446,7 +471,6 @@ function PlayerActions({ player, onBack }) {
                         </div>
                     </div>
 
-                    {/* Historique des actions */}
                     <div className="bg-neutral-800 rounded-lg p-4">
                         <h3 className="text-lg font-semibold text-neutral-200 border-b border-neutral-700 pb-2 mb-4 flex items-center gap-2">
                             <FontAwesomeIcon icon={faHistory} />

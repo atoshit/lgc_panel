@@ -40,7 +40,6 @@ function Roles() {
 
   const loadRoles = async () => {
     const response = await fetchNui('getRoles');
-    console.log('Roles response:', response); 
     if (response?.success) {
       setRoles(response.data);
     }
